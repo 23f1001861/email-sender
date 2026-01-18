@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  emailJobs EmailJob[]
+}
+
+model EmailJob {
+  id              String    @id @default(cuid())
+  subject         String
+  body            String
+  scheduledFor    DateTime
+  delaySeconds    Int
+  hourlyLimit     Int
+  status          String    @default("pending") // pending, processing, completed, failed
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  recipients      EmailRecipient[]
+}
+
+model EmailRecipient {
+  id              String    @id @default(cuid())
+  email           String
+  emailJobId      String
+  emailJob        EmailJob  @relation(fields: [emailJobId], references: [id])
+  status          String    @default("pending") // pending, sent, failed, scheduled
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+  errorMessage    String?
+  retryCount      Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([emailJobId])
+  @@index([status])
+  @@index([scheduledAt])
+}

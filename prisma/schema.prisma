@@ -1,0 +1,93 @@
+// filepath: d:\Beyondkarma_tech\Email-sender-project\prisma\schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// NextAuth Models (for frontend authentication)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// User Model (with NextAuth fields)
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  emailJobs     EmailJob[]
+}
+
+model EmailJob {
+  id              String    @id @default(cuid())
+  subject         String
+  body            String
+  scheduledFor    DateTime
+  delaySeconds    Int
+  hourlyLimit     Int
+  status          String    @default("pending")
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  recipients      EmailRecipient[]
+}
+
+model EmailRecipient {
+  id              String    @id @default(cuid())
+  email           String
+  emailJobId      String
+  emailJob        EmailJob  @relation(fields: [emailJobId], references: [id])
+  status          String    @default("pending")
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+  errorMessage    String?
+  retryCount      Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([emailJobId])
+  @@index([status])
+  @@index([scheduledAt])
+}

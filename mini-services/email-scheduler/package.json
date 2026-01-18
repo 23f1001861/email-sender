@@ -1,0 +1,26 @@
+{
+  "name": "email-scheduler-service",
+  "version": "1.0.0",
+  "description": "Email scheduler service with BullMQ and Redis",
+  "scripts": {
+    "dev": "ts-node index.ts",
+    "start": "ts-node index.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.2",
+    "bullmq": "^5.29.2",
+    "express": "^4.21.2",
+    "ioredis": "^5.5.1",
+    "node-fetch": "^2.7.0",
+    "nodemailer": "^6.10.0",
+    "prisma": "^6.19.2",
+    "ts-node": "^10.9.2",
+    "zod": "^4.0.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.19.7",
+    "@types/nodemailer": "^7.0.5",
+    "typescript": "^5"
+  }
+}
